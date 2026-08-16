@@ -5,6 +5,7 @@ const { globalLimiter } = require("./middleware/rateLimiter");
 const requestLogger = require("./middleware/requestLogger");
 const errorHandler = require("./middleware/errorHandler");
 const healthRoute = require("./routes/health");
+const notificationsRoute = require("./routes/notifications");
 const { ALLOWED_ORIGINS } = require("./config/env");
 
 const app = express();
@@ -44,7 +45,7 @@ app.use(globalLimiter);
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use("/health", healthRoute);
-
+app.use("/notifications", notificationsRoute);
 // ── 404 ──────────────────────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ error: "Route not found" }));
 
