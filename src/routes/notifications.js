@@ -6,6 +6,9 @@ const {
   notificationQueue,
 } = require("../queues/notificationQueue");
 const { strictLimiter } = require("../middleware/rateLimiter");
+const { authenticate } = require("../middleware/authenticate");
+const { authorize } = require("../middleware/authorize");
+const { apiKeyGuard } = require("../middleware/apiKeyGuard");
 
 // ── Reusable validators ──────────────────────────────────────────────────────
 
@@ -32,6 +35,7 @@ const validate = (req, res, next) => {
 // ── POST /notifications/subscribe ────────────────────────────────────────────
 router.post(
   "/subscribe",
+  authenticate,
   [tokensRule, topicRule],
   validate,
   async (req, res, next) => {
@@ -52,6 +56,7 @@ router.post(
 // ── POST /notifications/unsubscribe ──────────────────────────────────────────
 router.post(
   "/unsubscribe",
+    authenticate,
   [tokensRule, topicRule],
   validate,
   async (req, res, next) => {
@@ -74,6 +79,8 @@ router.post(
 router.post(
   "/broadcast",
   strictLimiter,
+  apiKeyGuard, // API key required for broadcast (Bearer token/X-Api-Key)
+  authorize("admin", "service"), // Only admin and service roles can broadcast
   [
     topicRule,
     body("title").isString().trim().notEmpty().isLength({ max: 100 }),
